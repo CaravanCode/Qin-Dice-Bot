@@ -57,9 +57,4 @@ def roll_dice(num_dice, num_sides, modifiers, description):
         return str(dice_rolls+"\n"+final_result)
 
 
-<<<<<<< HEAD
 bot.run(TOKEN)
-=======
-client.run(
-    "MTA2MzY0OTI3MzcwNDYxMTk3MA.GA61xl.18tN2Rah9JyAztDk4wbWkjZ90jHQ7-9-VkMWBk")
->>>>>>> 3edb4e7590c88968f650e6f52553906614420fec
