@@ -20,15 +20,15 @@ def roll_dice(num_dice, num_sides):
     if rolls[0] == rolls[1]:
         if rolls[0] == 0:
             result = "("+str(rolls[1])+", "+str(rolls[0])+")"
-            return "Critical Fail"
+            return result+"\n"+"Critical Fail"
         else:
             result = "("+str(rolls[1])+", "+str(rolls[0])+")"
-            return "Critical Success\nChi gained: " + str(rolls[0])
+            return result+"\n"+"Critical Success\nChi gained: " + str(rolls[0])
 
     else:
         result = "("+str(rolls[1])+", "+str(rolls[0])+")"
-        return rolls[1] - rolls[0]
+        return result+"\n"+rolls[1] - rolls[0]
 
 
 client.run(
-    "MTA2MzY0OTI3MzcwNDYxMTk3MA.GGeeeM.Vkna8H_X2V5Ngg22f4PtSjmiFoI8_cdYujmRUk")
+    "MTA2MzY0OTI3MzcwNDYxMTk3MA.GA61xl.18tN2Rah9JyAztDk4wbWkjZ90jHQ7-9-VkMWBk")
