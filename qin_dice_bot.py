@@ -31,4 +31,4 @@ def roll_dice(num_dice, num_sides):
 
 
 client.run(
-    "MTA2MzY0OTI3MzcwNDYxMTk3MA.Gyz6IW.opQqd5Q4jO5nb3xylPbHp1PVxV8nu2Dg0TiknU")
+    "MTA2MzY0OTI3MzcwNDYxMTk3MA.GA61xl.18tN2Rah9JyAztDk4wbWkjZ90jHQ7-9-VkMWBk")
