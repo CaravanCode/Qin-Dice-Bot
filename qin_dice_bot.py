@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-
+TOKEN = "Your Bot Token"
 emo_yin = "<:yin:1064122799091884082>"
 emo_yang = "<:yang:1064122752866463775>"
 emo_yy = "<:yin_yang:1064348918672015380>"
@@ -22,20 +22,29 @@ async def on_ready():
 
 @bot.command()
 async def weapon(ctx, *args):
-    weapon_names, weapon_descs, weapon_damages, weapon_resiliences, weapon_skilsl, weapon_prices = load_weapon()
+    weapon_result = load_weapon()
     if not args:
         separator = ', '
-        weapons = separator.join(weapon_names)
+        weapons = separator.join(weapon_result[0])
         weapon_list = weapons.split(separator)
         weapon_list.sort()
         result = '\n'.join(weapon_list)
         await ctx.send(f"{ctx.author.mention}"+"\n"+result)
     else:
-        filtered_weapons = [
-            x for x in weapon_names if args[0].lower() in x.lower()]
+        filtered_weapons = [x for x in weapon_result[0]
+                            if args[0].lower() == x.lower()]
         if filtered_weapons:
-            weapon_name, weapon_damage = choosen_weapon(filtered_weapons)
-            await ctx.send(f"{ctx.author.mention}\n{weapon_name}")
+            result = choosen_weapon(filtered_weapons)
+            weapon_name = result[0]
+            weapon_name = weapon_name.title()
+            weapon_skill = str(result[3])
+            weapon_skill = weapon_skill.title()
+            embed = discord.Embed(
+                title=weapon_name, description=result[5], color=0xFF5733)
+            embed.add_field(name="Damage", value=result[1], inline=True)
+            embed.add_field(name="Resilience", value=result[2], inline=True)
+            embed.add_field(name="Skill", value=weapon_skill, inline=True)
+            await ctx.send(f"{ctx.author.mention}\n", embed=embed)
         else:
             await ctx.send("Weapon not found.")
 
@@ -58,17 +67,20 @@ async def s(ctx, *args):
 
 @bot.command()
 async def a(ctx, *args):
-    args = " ".join(args)
-    input_list = re.split(r'[+ ]', args)
-    num_dice, num_sides = input_list[0].split("d")
-    modifiers = [int(i)
-                 for i in input_list[1:] if i.lstrip("+-").isdigit()]
-    desc = [i for i in input_list[1:] if (
-        not i.lstrip("+-").isdigit()) and i != '']
-    weapon_name, weapon_damage = choosen_weapon(desc)
-    result = attack_check(int(num_dice), int(num_sides),
-                          modifiers, weapon_name, int(weapon_damage))
-    await ctx.send(f"{ctx.author.mention}"+"\n"+result)
+    try:
+        args = " ".join(args)
+        input_list = re.split(r'[+ ]', args)
+        num_dice, num_sides = input_list[0].split("d")
+        modifiers = [int(i)
+                     for i in input_list[1:] if i.lstrip("+-").isdigit()]
+        desc = [i for i in input_list[1:] if (
+            not i.lstrip("+-").isdigit()) and i != '']
+        weapon_result = choosen_weapon(desc)
+        result = attack_check(int(num_dice), int(num_sides),
+                              modifiers, weapon_result[0], int(weapon_result[1]))
+        await ctx.send(f"{ctx.author.mention}"+"\n"+result)
+    except ValueError as e:
+        await ctx.send("Invalid input. Please enter in the format '!a 2d10 (metal) (martial skill) (registered weapon)'")
 
 
 def roll_dice2(num_dice, num_sides):
@@ -108,14 +120,14 @@ def skill_check(num_dice, num_sides, modifiers, description):
     sum_mod = sum(modifiers)
     total = dice_result + sum_mod
     if checker == "Crit Fail":
-        result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Fail!\nResult: 0 {emo_yy}**"
+        result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Fail!\nResult: 0 {emo_yy}\nChi Lost: 5**"
         return result
     elif checker == "Crit Success":
         if sum_mod < 0:
-            result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Success!\nResult: {yin} {emo_yy} {sum_mod}**"
+            result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Success!\nResult: {yin} {emo_yy} {sum_mod} = {total}\nChi Gainned: {yin}**"
             return result
         else:
-            result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Success!\nResult: {yin} {emo_yy} + {sum_mod} = {total}**"
+            result = f"**{desc}: \n{yin} {emo_yin} {yang} {emo_yang} Critical Success!\nResult: {yin} {emo_yy} + {sum_mod} = {total}\nChi Gainned: {yin}**"
             return result
     else:
         if checker == 0:
@@ -127,7 +139,7 @@ def skill_check(num_dice, num_sides, modifiers, description):
 
 
 def choosen_weapon(weapon):
-    weapon_names, weapon_descs, weapon_damages, weapon_resiliences, weapon_skilsl, weapon_prices = load_weapon()
+    weapon_names, weapon_descs, weapon_damages, weapon_resiliences, weapon_skills, weapon_prices = load_weapon()
     weapon_name = weapon[0]
     if weapon_name in weapon_names:
         # Do something with the weapon
@@ -137,13 +149,13 @@ def choosen_weapon(weapon):
             # case where input is "bang"
             name_join = " ".join(alt_name)
             weapon_name = name_join
-            return weapon_name, weapon_damages[index]
+            return weapon_name, weapon_damages[index], weapon_resiliences[index], weapon_skills[index], weapon_prices[index], weapon_descs[index]
         else:
             # case where input is "bang_xiao"
             alt_name = alt_name[::-1]
             name_join = " ".join(alt_name)
             weapon_name = name_join
-            return weapon_name, weapon_damages[index]
+            return weapon_name, weapon_damages[index], weapon_resiliences[index], weapon_skills[index], weapon_prices[index], weapon_descs[index]
     else:
         print("Invalid weapon")
         return None, None
@@ -152,7 +164,11 @@ def choosen_weapon(weapon):
 def damage_check(num_dice, num_sides, modifiers, weapon_name, weapon_damage):
     damage_yin, damage_yang = roll_dice2(num_dice, num_sides)
     damage_checker, damage_dice_result = dice_checker(damage_yin, damage_yang)
-    if (damage_checker == (("Crit Fail") or ("Crit Success"))):
+    print(damage_checker)
+    if (damage_checker == ("Crit Fail")):
+        total_damage = modifiers + weapon_damage + damage_dice_result
+        return f"**Damage:**\n{damage_yin} {emo_yin} {damage_yang} {emo_yang}\n**Result: **{damage_dice_result} {emo_yy} + {modifiers}(Metal) + {weapon_damage}({weapon_name.title()}) = {total_damage}"
+    elif (damage_checker == ("Crit Success")):
         total_damage = modifiers + weapon_damage + damage_dice_result
         return f"**Damage:**\n{damage_yin} {emo_yin} {damage_yang} {emo_yang}\n**Result: **{damage_dice_result} {emo_yy} + {modifiers}(Metal) + {weapon_damage}({weapon_name.title()}) = {total_damage}"
     else:
