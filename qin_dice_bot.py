@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-TOKEN = "MTA2MzY0OTI3MzcwNDYxMTk3MA.GP00WW.Kg1WZMs8EPZLp2ibQIZ2KnEoMd-3ZcNXaIhgYI"
+
 emo_yin = "<:yin:1064122799091884082>"
 emo_yang = "<:yang:1064122752866463775>"
 emo_yy = "<:yin_yang:1064348918672015380>"
