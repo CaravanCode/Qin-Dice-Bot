@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 
 
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
-
+TOKEN = "MTA2MzY0OTI3MzcwNDYxMTk3MA.GP00WW.Kg1WZMs8EPZLp2ibQIZ2KnEoMd-3ZcNXaIhgYI"
 emo_yin = "<:yin:1064122799091884082>"
 emo_yang = "<:yang:1064122752866463775>"
 emo_yy = "<:yin_yang:1064348918672015380>"
@@ -18,6 +18,26 @@ emo_yang_m = "<:yang_m:1065391125176799343>"
 @bot.event
 async def on_ready():
     print("Qin Dice Bot is ready!")
+
+
+@bot.command()
+async def weapon(ctx, *args):
+    weapon_names, weapon_descs, weapon_damages, weapon_resiliences, weapon_skilsl, weapon_prices = load_weapon()
+    if not args:
+        separator = ', '
+        weapons = separator.join(weapon_names)
+        weapon_list = weapons.split(separator)
+        weapon_list.sort()
+        result = '\n'.join(weapon_list)
+        await ctx.send(f"{ctx.author.mention}"+"\n"+result)
+    else:
+        filtered_weapons = [
+            x for x in weapon_names if args[0].lower() in x.lower()]
+        if filtered_weapons:
+            weapon_name, weapon_damage = choosen_weapon(filtered_weapons)
+            await ctx.send(f"{ctx.author.mention}\n{weapon_name}")
+        else:
+            await ctx.send("Weapon not found.")
 
 
 @bot.command()
@@ -117,14 +137,12 @@ def choosen_weapon(weapon):
             # case where input is "bang"
             name_join = " ".join(alt_name)
             weapon_name = name_join
-            print(f"{weapon_name} {weapon_damages[index]}")
             return weapon_name, weapon_damages[index]
         else:
             # case where input is "bang_xiao"
             alt_name = alt_name[::-1]
             name_join = " ".join(alt_name)
             weapon_name = name_join
-            print(f"{weapon_name} {weapon_damages[index]}")
             return weapon_name, weapon_damages[index]
     else:
         print("Invalid weapon")
